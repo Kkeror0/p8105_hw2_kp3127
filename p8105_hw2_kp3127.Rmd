@@ -19,7 +19,10 @@ pols_df=read.csv("./fivethirtyeight_datasets/pols-month.csv") %>%
     sep = "-", 
   ) %>% 
     mutate(
-      month=month.name[as.numeric(month)],
+      year  = as.character(year),
+      month = as.integer(month),       
+      month = month.name[month],       
+      month = as.character(month),
       president = case_when(prez_gop == 1 ~ "gop",prez_dem == 1 ~ "dem")
   ) %>% 
   select(-day, -prez_gop, -prez_dem)
@@ -31,12 +34,18 @@ snp_df=read.csv("./fivethirtyeight_datasets/snp.csv") %>%
   janitor::clean_names() %>% 
     separate(
     col = date, 
-    into = c("year", "month", "day"), 
+    into = c("day", "month", "year"), 
     sep = "/", 
   ) %>% 
-  mutate(month=month.name[as.numeric(month)]) %>% 
+  mutate(
+    month=month.name[as.integer(month)],
+    year=as.integer(year),
+    year  = ifelse(year < 50, 2000 + year, 1900 + year),
+    year=as.character(year),
+    month=as.character(month)) %>% 
   arrange(year,month) %>% 
-  select(-day)
+  select(-day) %>% 
+  select(year,month,everything())
 ```
 data in unemployment .csv
 ```{r}
@@ -46,13 +55,26 @@ unemp_df=read.csv("./fivethirtyeight_datasets/unemployment.csv") %>%
     jan:dec,
     names_to = 'month',
     values_to = "unemployment"
+  ) %>% 
+  mutate(
+    month = month.name[match(tolower(month), tolower(month.abb))],
+    year=as.character(year),
+    month=as.character(month)
   )
 ```
 joining datasets
 ```{r}
-pols_snp <- left_join(pols_df, snp_df, by = c("year", "month"))
 
-# 再把 unemp 加进去
-final_df <- left_join(pols_snp, unemp_df, by = c("year", "month"))
+pols_snp = left_join(pols_df, snp_df, by = c("year", "month"))
+
+final_df = left_join(pols_snp, unemp_df, by = c("year", "month"))
 ```
+
+The `pols-month` dataset contains information on the number of national politicians (governors, senators, representatives) who were Republican or Democrat, and a variable indicating which party held the presidency in a given month.  
+
+The `snp` dataset reports the closing value of the S&P stock index for each month.  
+
+The `unemployment` dataset shows the percentage of unemployment, by month and year.  
+
+After cleaning and merging by `year` and `month`, the resulting dataset has `r dim(final_df)[1]` rows and `r dim(final_df)[2]` columns, spanning years `r range(final_df$year, na.rm = TRUE)[1]` to `r range(final_df$year, na.rm = TRUE)[2]`. Key variables include `year`, `month`, `president` (party in power), `close` (S&P closing value), and `unemployment` (unemployment rate).  
 

@@ -368,14 +368,70 @@ display: none;
 ## ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
 <div id="promblem-1" class="section level2">
 <h2>Promblem 1</h2>
+<p>data in pols-month.csv</p>
 <pre class="r"><code>pols_df=read.csv(&quot;./fivethirtyeight_datasets/pols-month.csv&quot;) %&gt;% 
   janitor::clean_names() %&gt;% 
   separate(
     col = mon, 
     into = c(&quot;year&quot;, &quot;month&quot;, &quot;day&quot;), 
     sep = &quot;-&quot;, 
-    convert = TRUE
+  ) %&gt;% 
+    mutate(
+      year  = as.character(year),
+      month = as.integer(month),       
+      month = month.name[month],       
+      month = as.character(month),
+      president = case_when(prez_gop == 1 ~ &quot;gop&quot;,prez_dem == 1 ~ &quot;dem&quot;)
+  ) %&gt;% 
+  select(-day, -prez_gop, -prez_dem)</code></pre>
+<p>data in snp.csv</p>
+<pre class="r"><code>snp_df=read.csv(&quot;./fivethirtyeight_datasets/snp.csv&quot;) %&gt;% 
+  janitor::clean_names() %&gt;% 
+    separate(
+    col = date, 
+    into = c(&quot;day&quot;, &quot;month&quot;, &quot;year&quot;), 
+    sep = &quot;/&quot;, 
+  ) %&gt;% 
+  mutate(
+    month=month.name[as.integer(month)],
+    year=as.integer(year),
+    year  = ifelse(year &lt; 50, 2000 + year, 1900 + year),
+    year=as.character(year),
+    month=as.character(month)) %&gt;% 
+  arrange(year,month) %&gt;% 
+  select(-day) %&gt;% 
+  select(year,month,everything())</code></pre>
+<p>data in unemployment .csv</p>
+<pre class="r"><code>unemp_df=read.csv(&quot;./fivethirtyeight_datasets/unemployment.csv&quot;) %&gt;% 
+  janitor::clean_names() %&gt;% 
+  pivot_longer(
+    jan:dec,
+    names_to = &#39;month&#39;,
+    values_to = &quot;unemployment&quot;
+  ) %&gt;% 
+  mutate(
+    month = month.name[match(tolower(month), tolower(month.abb))],
+    year=as.character(year),
+    month=as.character(month)
   )</code></pre>
+<p>joining datasets</p>
+<pre class="r"><code>pols_snp = left_join(pols_df, snp_df, by = c(&quot;year&quot;, &quot;month&quot;))
+
+final_df = left_join(pols_snp, unemp_df, by = c(&quot;year&quot;, &quot;month&quot;))</code></pre>
+<p>The <code>pols-month</code> dataset contains information on the
+number of national politicians (governors, senators, representatives)
+who were Republican or Democrat, and a variable indicating which party
+held the presidency in a given month.</p>
+<p>The <code>snp</code> dataset reports the closing value of the S&amp;P
+stock index for each month.</p>
+<p>The <code>unemployment</code> dataset shows the percentage of
+unemployment, by month and year.</p>
+<p>After cleaning and merging by <code>year</code> and
+<code>month</code>, the resulting dataset has 1391 rows and 11 columns,
+spanning years 1947 to 2015. Key variables include <code>year</code>,
+<code>month</code>, <code>president</code> (party in power),
+<code>close</code> (S&amp;P closing value), and
+<code>unemployment</code> (unemployment rate).</p>
 </div>
 
 
