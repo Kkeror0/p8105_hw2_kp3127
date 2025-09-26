@@ -9,6 +9,7 @@ library(tidyverse)
 ```
 
 ## Promblem 1
+data in pols-month.csv
 ```{r}
 pols_df=read.csv("./fivethirtyeight_datasets/pols-month.csv") %>% 
   janitor::clean_names() %>% 
@@ -16,7 +17,42 @@ pols_df=read.csv("./fivethirtyeight_datasets/pols-month.csv") %>%
     col = mon, 
     into = c("year", "month", "day"), 
     sep = "-", 
-    convert = TRUE
+  ) %>% 
+    mutate(
+      month=month.name[as.numeric(month)],
+      president = case_when(prez_gop == 1 ~ "gop",prez_dem == 1 ~ "dem")
+  ) %>% 
+  select(-day, -prez_gop, -prez_dem)
+```
+
+data in snp.csv
+```{r}
+snp_df=read.csv("./fivethirtyeight_datasets/snp.csv") %>% 
+  janitor::clean_names() %>% 
+    separate(
+    col = date, 
+    into = c("year", "month", "day"), 
+    sep = "/", 
+  ) %>% 
+  mutate(month=month.name[as.numeric(month)]) %>% 
+  arrange(year,month) %>% 
+  select(-day)
+```
+data in unemployment .csv
+```{r}
+unemp_df=read.csv("./fivethirtyeight_datasets/unemployment.csv") %>% 
+  janitor::clean_names() %>% 
+  pivot_longer(
+    jan:dec,
+    names_to = 'month',
+    values_to = "unemployment"
   )
+```
+joining datasets
+```{r}
+pols_snp <- left_join(pols_df, snp_df, by = c("year", "month"))
+
+# 再把 unemp 加进去
+final_df <- left_join(pols_snp, unemp_df, by = c("year", "month"))
 ```
 
