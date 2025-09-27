@@ -131,5 +131,13 @@ Combine:
 ```{r}
 trash_df=bind_rows(mr_trash_df,pro_trash_df,gwy_trash_df)
 ```
+The combined Trash Wheel dataset contains `r nrow(trash_df)` observations, each corresponding to a dumpster of trash collected by one of the wheels (Mr., Professor, or Gwynnda). Key variables include `dumpster` (the dumpster identifier), `date`, `weight_tons` (weight of trash in tons), `volume_cubic_yards`, and counts of items such as `plastic_bottles`, `polystyrene`, `cigarette_butts`, and `sports_balls`.  
+For available data, Professor Trash Wheel has collected a total of `r trash_df %>% filter(wheel == "pro") %>% summarise(sum(weight_tons, na.rm = TRUE)) %>% pull()` tons of trash. Gwynnda collected `r format(trash_df %>% filter(wheel == "gwy", lubridate::year(date) == 2022, lubridate::month(date) == 6) %>% summarise(sum(cigarette_butts, na.rm = TRUE)) %>% pull(),scientific = FALSE)` cigarette butts in June 2022.
 
+`r format(trash_df %>% 
+             filter(wheel == "gwy", 
+                    lubridate::year(date) == 2022, 
+                    lubridate::month(date) == 6) %>% 
+             summarise(sum(cigarette_butts, na.rm = TRUE)) %>% 
+             pull(), scientific = FALSE)`
 
