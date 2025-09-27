@@ -432,6 +432,19 @@ spanning years 1947 to 2015. Key variables include <code>year</code>,
 <code>month</code>, <code>president</code> (party in power),
 <code>close</code> (S&amp;P closing value), and
 <code>unemployment</code> (unemployment rate).</p>
+<p>#Problem 2 Data in Mr. Trash Wheel sheet:</p>
+<pre class="r"><code>mr_trash_df=readxl::read_excel(&quot;./fivethirtyeight_datasets/202409 Trash Wheel Collection Data.xlsx&quot;,
+                            sheet = &quot;Mr. Trash Wheel&quot;,
+                            skip=1,
+                            range=&quot;A2:N655&quot;
+                            ) %&gt;% 
+  janitor::clean_names() %&gt;% 
+  filter(!is.na(dumpster)) %&gt;% 
+  mutate(
+    sports_balls=as.integer(round(sports_balls)),
+    wheel=&quot;mr&quot;
+  ) %&gt;% 
+  select(wheel,everything())</code></pre>
 </div>
 
 

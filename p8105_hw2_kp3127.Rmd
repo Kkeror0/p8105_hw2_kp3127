@@ -78,5 +78,20 @@ The `unemployment` dataset shows the percentage of unemployment, by month and ye
 
 After cleaning and merging by `year` and `month`, the resulting dataset has `r dim(final_df)[1]` rows and `r dim(final_df)[2]` columns, spanning years `r range(final_df$year, na.rm = TRUE)[1]` to `r range(final_df$year, na.rm = TRUE)[2]`. Key variables include `year`, `month`, `president` (party in power), `close` (S&P closing value), and `unemployment` (unemployment rate).  
 
-
+#Problem 2
+Data in Mr. Trash Wheel sheet:
+```{r}
+mr_trash_df=readxl::read_excel("./fivethirtyeight_datasets/202409 Trash Wheel Collection Data.xlsx",
+                            sheet = "Mr. Trash Wheel",
+                            skip=1,
+                            range="A2:N655"
+                            ) %>% 
+  janitor::clean_names() %>% 
+  filter(!is.na(dumpster)) %>% 
+  mutate(
+    sports_balls=as.integer(round(sports_balls)),
+    wheel="mr"
+  ) %>% 
+  select(wheel,everything())
+```
 
