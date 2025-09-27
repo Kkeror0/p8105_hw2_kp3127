@@ -78,3 +78,5 @@ The `unemployment` dataset shows the percentage of unemployment, by month and ye
 
 After cleaning and merging by `year` and `month`, the resulting dataset has `r dim(final_df)[1]` rows and `r dim(final_df)[2]` columns, spanning years `r range(final_df$year, na.rm = TRUE)[1]` to `r range(final_df$year, na.rm = TRUE)[2]`. Key variables include `year`, `month`, `president` (party in power), `close` (S&P closing value), and `unemployment` (unemployment rate).  
 
+
+
