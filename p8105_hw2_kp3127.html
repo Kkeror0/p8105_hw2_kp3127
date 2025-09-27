@@ -442,9 +442,38 @@ spanning years 1947 to 2015. Key variables include <code>year</code>,
   filter(!is.na(dumpster)) %&gt;% 
   mutate(
     sports_balls=as.integer(round(sports_balls)),
-    wheel=&quot;mr&quot;
+    wheel=&quot;mr&quot;,
+    year=as.character(year)
   ) %&gt;% 
   select(wheel,everything())</code></pre>
+<p>Data in Professor Trash Wheel:</p>
+<pre class="r"><code>pro_trash_df=readxl::read_excel(&quot;./fivethirtyeight_datasets/202409 Trash Wheel Collection Data.xlsx&quot;,
+                            sheet = &quot;Professor Trash Wheel&quot;,
+                            skip=1,
+                            range=&quot;A2:M123&quot;
+                            ) %&gt;% 
+  janitor::clean_names() %&gt;% 
+  filter(!is.na(dumpster)) %&gt;% 
+  mutate(
+    wheel=&quot;pro&quot;,
+    year=as.character(year)
+  ) %&gt;% 
+  select(wheel,everything())</code></pre>
+<p>Data in Gwynnda Trash Wheel:</p>
+<pre class="r"><code>gwy_trash_df=readxl::read_excel(&quot;./fivethirtyeight_datasets/202409 Trash Wheel Collection Data.xlsx&quot;,
+                            sheet = &quot;Gwynnda Trash Wheel&quot;,
+                            skip=1,
+                            range=&quot;A2:L266&quot;
+                            ) %&gt;% 
+  janitor::clean_names() %&gt;% 
+  filter(!is.na(dumpster)) %&gt;% 
+  mutate(
+    wheel=&quot;gwy&quot;,
+    year=as.character(year)
+  ) %&gt;% 
+  select(wheel,everything())</code></pre>
+<p>Combine:</p>
+<pre class="r"><code>trash_df=bind_rows(mr_trash_df,pro_trash_df,gwy_trash_df)</code></pre>
 </div>
 
 

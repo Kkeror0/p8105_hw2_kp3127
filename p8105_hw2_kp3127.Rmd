@@ -90,8 +90,46 @@ mr_trash_df=readxl::read_excel("./fivethirtyeight_datasets/202409 Trash Wheel Co
   filter(!is.na(dumpster)) %>% 
   mutate(
     sports_balls=as.integer(round(sports_balls)),
-    wheel="mr"
+    wheel="mr",
+    year=as.character(year)
   ) %>% 
   select(wheel,everything())
 ```
+Data in Professor Trash Wheel:
+```{r}
+pro_trash_df=readxl::read_excel("./fivethirtyeight_datasets/202409 Trash Wheel Collection Data.xlsx",
+                            sheet = "Professor Trash Wheel",
+                            skip=1,
+                            range="A2:M123"
+                            ) %>% 
+  janitor::clean_names() %>% 
+  filter(!is.na(dumpster)) %>% 
+  mutate(
+    wheel="pro",
+    year=as.character(year)
+  ) %>% 
+  select(wheel,everything())
+```
+
+Data in Gwynnda Trash Wheel:
+```{r}
+gwy_trash_df=readxl::read_excel("./fivethirtyeight_datasets/202409 Trash Wheel Collection Data.xlsx",
+                            sheet = "Gwynnda Trash Wheel",
+                            skip=1,
+                            range="A2:L266"
+                            ) %>% 
+  janitor::clean_names() %>% 
+  filter(!is.na(dumpster)) %>% 
+  mutate(
+    wheel="gwy",
+    year=as.character(year)
+  ) %>% 
+  select(wheel,everything())
+```
+
+Combine:
+```{r}
+trash_df=bind_rows(mr_trash_df,pro_trash_df,gwy_trash_df)
+```
+
 
