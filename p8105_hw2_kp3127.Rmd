@@ -8,8 +8,8 @@ date: "2025-09-25"
 library(tidyverse)
 ```
 
-## Promblem 1
-data in pols-month.csv
+# Promblem 1
+## data in pols-month.csv:
 ```{r}
 pols_df=read.csv("./fivethirtyeight_datasets/pols-month.csv") %>% 
   janitor::clean_names() %>% 
@@ -28,7 +28,7 @@ pols_df=read.csv("./fivethirtyeight_datasets/pols-month.csv") %>%
   select(-day, -prez_gop, -prez_dem)
 ```
 
-data in snp.csv
+## data in snp.csv:
 ```{r}
 snp_df=read.csv("./fivethirtyeight_datasets/snp.csv") %>% 
   janitor::clean_names() %>% 
@@ -47,7 +47,7 @@ snp_df=read.csv("./fivethirtyeight_datasets/snp.csv") %>%
   select(-day) %>% 
   select(year,month,everything())
 ```
-data in unemployment .csv
+## data in unemployment.csv:
 ```{r}
 unemp_df=read.csv("./fivethirtyeight_datasets/unemployment.csv") %>% 
   janitor::clean_names() %>% 
@@ -62,7 +62,7 @@ unemp_df=read.csv("./fivethirtyeight_datasets/unemployment.csv") %>%
     month=as.character(month)
   )
 ```
-joining datasets
+## joining datasets:
 ```{r}
 
 pols_snp = left_join(pols_df, snp_df, by = c("year", "month"))
@@ -78,8 +78,8 @@ The `unemployment` dataset shows the percentage of unemployment, by month and ye
 
 After cleaning and merging by `year` and `month`, the resulting dataset has `r dim(final_df)[1]` rows and `r dim(final_df)[2]` columns, spanning years `r range(final_df$year, na.rm = TRUE)[1]` to `r range(final_df$year, na.rm = TRUE)[2]`. Key variables include `year`, `month`, `president` (party in power), `close` (S&P closing value), and `unemployment` (unemployment rate).  
 
-#Problem 2
-Data in Mr. Trash Wheel sheet:
+# Problem 2
+## Data in Mr. Trash Wheel sheet:
 ```{r}
 mr_trash_df=readxl::read_excel("./fivethirtyeight_datasets/202409 Trash Wheel Collection Data.xlsx",
                             sheet = "Mr. Trash Wheel",
@@ -95,7 +95,7 @@ mr_trash_df=readxl::read_excel("./fivethirtyeight_datasets/202409 Trash Wheel Co
   ) %>% 
   select(wheel,everything())
 ```
-Data in Professor Trash Wheel:
+## Data in Professor Trash Wheel:
 ```{r}
 pro_trash_df=readxl::read_excel("./fivethirtyeight_datasets/202409 Trash Wheel Collection Data.xlsx",
                             sheet = "Professor Trash Wheel",
@@ -111,7 +111,7 @@ pro_trash_df=readxl::read_excel("./fivethirtyeight_datasets/202409 Trash Wheel C
   select(wheel,everything())
 ```
 
-Data in Gwynnda Trash Wheel:
+## Data in Gwynnda Trash Wheel:
 ```{r}
 gwy_trash_df=readxl::read_excel("./fivethirtyeight_datasets/202409 Trash Wheel Collection Data.xlsx",
                             sheet = "Gwynnda Trash Wheel",
@@ -127,7 +127,7 @@ gwy_trash_df=readxl::read_excel("./fivethirtyeight_datasets/202409 Trash Wheel C
   select(wheel,everything())
 ```
 
-Combine:
+## Combine:
 ```{r}
 trash_df=bind_rows(mr_trash_df,pro_trash_df,gwy_trash_df)
 ```
@@ -135,7 +135,7 @@ The combined Trash Wheel dataset contains `r nrow(trash_df)` observations, each 
 For available data, Professor Trash Wheel has collected a total of `r trash_df %>% filter(wheel == "pro") %>% summarise(sum(weight_tons, na.rm = TRUE)) %>% pull()` tons of trash. Gwynnda collected `r format(trash_df %>% filter(wheel == "gwy", lubridate::year(date) == 2022, lubridate::month(date) == 6) %>% summarise(sum(cigarette_butts, na.rm = TRUE)) %>% pull(),scientific = FALSE)` cigarette butts in June 2022.
 
 # Problem 3
-upload two files
+## upload two files
 ```{r}
 zip_code=read.csv("./zillow_data/Zip Codes.csv") %>% 
   janitor::clean_names() %>% 
@@ -161,7 +161,8 @@ zori_nyc=read.csv("./zillow_data/Zip_zori_uc_sfrcondomfr_sm_month_NYC.csv") %>%
   arrange(zip)
 ```
 
-Merge the two files. Before we merge, we need to check for completeness and correctness across datasets.
+## Merge the two files. 
+Before we merge, we need to check for completeness and correctness across datasets.
 
 ```{r}
 zipmap_dups <- zip_code %>% count(zip) %>% filter(n > 1)
@@ -210,4 +211,35 @@ For example, ZIP codes `r paste(head(zip_missing, 3), collapse = ", ")` are in t
 Some ZIP codes are missing mainly because:  
 (1) Some ZIP codes may correspond to non-residential areas (e.g., large office or industrial zones) where Zillow does not track rental listings.  
 (2) Zillow often restricts its rental price index to areas with sufficient data quality and sample size, which means less populated or special-purpose ZIP codes may be left out.  
+
+## Rental price comparison:
+```{r}
+rent_20_21 <- zori_final %>% 
+  filter(
+    month(date)==1,
+    year(date) %in% c(2020,2021)
+  ) %>% 
+  mutate(year=year(date)) %>% 
+  select(zip, year, rent_index, county, neighborhood)
+
+rent_change <- rent_20_21 %>%
+  pivot_wider(
+    names_from = year,
+    values_from = rent_index,
+    names_prefix = "y"
+  ) %>%
+  mutate(change = y2021 - y2020) %>%
+  filter(!is.na(y2020) & !is.na(y2021))
+
+largest_drops <- rent_change %>%
+  arrange(change) %>%
+  head(n = 10) %>%
+  select(zip, county, neighborhood, y2020, y2021, change)
+
+largest_drops
+```
+Comparing January 2021 to January 2020, we calculated the year-over-year change in rent index for all ZIP codes.  
+Table above shows the 10 ZIP codes with the largest decline. For example, ZIP codes such as `r largest_drops$zip[1]` and `r largest_drops$zip[2]` experienced the most dramatic drops.  
+
+These declines are consistent with the impact of the COVID-19 pandemic: rental demand fell sharply in dense, high-cost neighborhoods, leading to reduced prices, while suburban areas sometimes saw more stable or even rising rents.
 

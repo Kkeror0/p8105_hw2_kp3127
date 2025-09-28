@@ -366,9 +366,10 @@ display: none;
 ## ✖ dplyr::filter() masks stats::filter()
 ## ✖ dplyr::lag()    masks stats::lag()
 ## ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
-<div id="promblem-1" class="section level2">
-<h2>Promblem 1</h2>
-<p>data in pols-month.csv</p>
+<div id="promblem-1" class="section level1">
+<h1>Promblem 1</h1>
+<div id="data-in-pols-month.csv" class="section level2">
+<h2>data in pols-month.csv:</h2>
 <pre class="r"><code>pols_df=read.csv(&quot;./fivethirtyeight_datasets/pols-month.csv&quot;) %&gt;% 
   janitor::clean_names() %&gt;% 
   separate(
@@ -384,7 +385,9 @@ display: none;
       president = case_when(prez_gop == 1 ~ &quot;gop&quot;,prez_dem == 1 ~ &quot;dem&quot;)
   ) %&gt;% 
   select(-day, -prez_gop, -prez_dem)</code></pre>
-<p>data in snp.csv</p>
+</div>
+<div id="data-in-snp.csv" class="section level2">
+<h2>data in snp.csv:</h2>
 <pre class="r"><code>snp_df=read.csv(&quot;./fivethirtyeight_datasets/snp.csv&quot;) %&gt;% 
   janitor::clean_names() %&gt;% 
     separate(
@@ -401,7 +404,9 @@ display: none;
   arrange(year,month) %&gt;% 
   select(-day) %&gt;% 
   select(year,month,everything())</code></pre>
-<p>data in unemployment .csv</p>
+</div>
+<div id="data-in-unemployment.csv" class="section level2">
+<h2>data in unemployment.csv:</h2>
 <pre class="r"><code>unemp_df=read.csv(&quot;./fivethirtyeight_datasets/unemployment.csv&quot;) %&gt;% 
   janitor::clean_names() %&gt;% 
   pivot_longer(
@@ -414,7 +419,9 @@ display: none;
     year=as.character(year),
     month=as.character(month)
   )</code></pre>
-<p>joining datasets</p>
+</div>
+<div id="joining-datasets" class="section level2">
+<h2>joining datasets:</h2>
 <pre class="r"><code>pols_snp = left_join(pols_df, snp_df, by = c(&quot;year&quot;, &quot;month&quot;))
 
 final_df = left_join(pols_snp, unemp_df, by = c(&quot;year&quot;, &quot;month&quot;))</code></pre>
@@ -432,7 +439,12 @@ spanning years 1947 to 2015. Key variables include <code>year</code>,
 <code>month</code>, <code>president</code> (party in power),
 <code>close</code> (S&amp;P closing value), and
 <code>unemployment</code> (unemployment rate).</p>
-<p>#Problem 2 Data in Mr. Trash Wheel sheet:</p>
+</div>
+</div>
+<div id="problem-2" class="section level1">
+<h1>Problem 2</h1>
+<div id="data-in-mr.-trash-wheel-sheet" class="section level2">
+<h2>Data in Mr. Trash Wheel sheet:</h2>
 <pre class="r"><code>mr_trash_df=readxl::read_excel(&quot;./fivethirtyeight_datasets/202409 Trash Wheel Collection Data.xlsx&quot;,
                             sheet = &quot;Mr. Trash Wheel&quot;,
                             skip=1,
@@ -446,7 +458,9 @@ spanning years 1947 to 2015. Key variables include <code>year</code>,
     year=as.character(year)
   ) %&gt;% 
   select(wheel,everything())</code></pre>
-<p>Data in Professor Trash Wheel:</p>
+</div>
+<div id="data-in-professor-trash-wheel" class="section level2">
+<h2>Data in Professor Trash Wheel:</h2>
 <pre class="r"><code>pro_trash_df=readxl::read_excel(&quot;./fivethirtyeight_datasets/202409 Trash Wheel Collection Data.xlsx&quot;,
                             sheet = &quot;Professor Trash Wheel&quot;,
                             skip=1,
@@ -459,7 +473,9 @@ spanning years 1947 to 2015. Key variables include <code>year</code>,
     year=as.character(year)
   ) %&gt;% 
   select(wheel,everything())</code></pre>
-<p>Data in Gwynnda Trash Wheel:</p>
+</div>
+<div id="data-in-gwynnda-trash-wheel" class="section level2">
+<h2>Data in Gwynnda Trash Wheel:</h2>
 <pre class="r"><code>gwy_trash_df=readxl::read_excel(&quot;./fivethirtyeight_datasets/202409 Trash Wheel Collection Data.xlsx&quot;,
                             sheet = &quot;Gwynnda Trash Wheel&quot;,
                             skip=1,
@@ -472,7 +488,9 @@ spanning years 1947 to 2015. Key variables include <code>year</code>,
     year=as.character(year)
   ) %&gt;% 
   select(wheel,everything())</code></pre>
-<p>Combine:</p>
+</div>
+<div id="combine" class="section level2">
+<h2>Combine:</h2>
 <pre class="r"><code>trash_df=bind_rows(mr_trash_df,pro_trash_df,gwy_trash_df)</code></pre>
 <p>The combined Trash Wheel dataset contains 1033 observations, each
 corresponding to a dumpster of trash collected by one of the wheels
@@ -486,9 +504,11 @@ For available data, Professor Trash Wheel has collected a total of
 246.74 tons of trash. Gwynnda collected 18120 cigarette butts in June
 2022.</p>
 </div>
+</div>
 <div id="problem-3" class="section level1">
 <h1>Problem 3</h1>
-<p>upload two files</p>
+<div id="upload-two-files" class="section level2">
+<h2>upload two files</h2>
 <pre class="r"><code>zip_code=read.csv(&quot;./zillow_data/Zip Codes.csv&quot;) %&gt;% 
   janitor::clean_names() %&gt;% 
   mutate(
@@ -511,8 +531,11 @@ zori_nyc=read.csv(&quot;./zillow_data/Zip_zori_uc_sfrcondomfr_sm_month_NYC.csv&q
   ) %&gt;% 
   select(zip,date,rent_index) %&gt;% 
   arrange(zip)</code></pre>
-<p>Merge the two files. Before we merge, we need to check for
-completeness and correctness across datasets.</p>
+</div>
+<div id="merge-the-two-files." class="section level2">
+<h2>Merge the two files.</h2>
+<p>Before we merge, we need to check for completeness and correctness
+across datasets.</p>
 <pre class="r"><code>zipmap_dups &lt;- zip_code %&gt;% count(zip) %&gt;% filter(n &gt; 1)
 zipmap_dups</code></pre>
 <pre><code>##     zip n
@@ -570,6 +593,55 @@ listings.<br />
 (2) Zillow often restricts its rental price index to areas with
 sufficient data quality and sample size, which means less populated or
 special-purpose ZIP codes may be left out.</p>
+</div>
+<div id="rental-price-comparison" class="section level2">
+<h2>Rental price comparison:</h2>
+<pre class="r"><code>rent_20_21 &lt;- zori_final %&gt;% 
+  filter(
+    month(date)==1,
+    year(date) %in% c(2020,2021)
+  ) %&gt;% 
+  mutate(year=year(date)) %&gt;% 
+  select(zip, year, rent_index, county, neighborhood)
+
+rent_change &lt;- rent_20_21 %&gt;%
+  pivot_wider(
+    names_from = year,
+    values_from = rent_index,
+    names_prefix = &quot;y&quot;
+  ) %&gt;%
+  mutate(change = y2021 - y2020) %&gt;%
+  filter(!is.na(y2020) &amp; !is.na(y2021))
+
+largest_drops &lt;- rent_change %&gt;%
+  arrange(change) %&gt;%
+  head(n = 10) %&gt;%
+  select(zip, county, neighborhood, y2020, y2021, change)
+
+largest_drops</code></pre>
+<pre><code>## # A tibble: 10 × 6
+##    zip   county   neighborhood                  y2020 y2021 change
+##    &lt;chr&gt; &lt;chr&gt;    &lt;chr&gt;                         &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;
+##  1 10007 New York Lower Manhattan               6334. 5422.  -913.
+##  2 10069 New York &lt;NA&gt;                          4623. 3875.  -748.
+##  3 10009 New York Lower East Side               3406. 2692.  -714.
+##  4 10016 New York Gramercy Park and Murray Hill 3731. 3019.  -712.
+##  5 10001 New York Chelsea and Clinton           4108. 3398.  -710.
+##  6 10002 New York Lower East Side               3645. 2935.  -710.
+##  7 10004 New York Lower Manhattan               3150. 2444.  -706.
+##  8 10038 New York Lower Manhattan               3573. 2876.  -698.
+##  9 10012 New York Greenwich Village and Soho    3629. 2942.  -686.
+## 10 10010 New York Gramercy Park and Murray Hill 3697. 3012.  -685.</code></pre>
+<p>Comparing January 2021 to January 2020, we calculated the
+year-over-year change in rent index for all ZIP codes.<br />
+Table above shows the 10 ZIP codes with the largest decline. For
+example, ZIP codes such as 10007 and 10069 experienced the most dramatic
+drops.</p>
+<p>These declines are consistent with the impact of the COVID-19
+pandemic: rental demand fell sharply in dense, high-cost neighborhoods,
+leading to reduced prices, while suburban areas sometimes saw more
+stable or even rising rents.</p>
+</div>
 </div>
 
 
