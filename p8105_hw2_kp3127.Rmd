@@ -134,10 +134,80 @@ trash_df=bind_rows(mr_trash_df,pro_trash_df,gwy_trash_df)
 The combined Trash Wheel dataset contains `r nrow(trash_df)` observations, each corresponding to a dumpster of trash collected by one of the wheels (Mr., Professor, or Gwynnda). Key variables include `dumpster` (the dumpster identifier), `date`, `weight_tons` (weight of trash in tons), `volume_cubic_yards`, and counts of items such as `plastic_bottles`, `polystyrene`, `cigarette_butts`, and `sports_balls`.  
 For available data, Professor Trash Wheel has collected a total of `r trash_df %>% filter(wheel == "pro") %>% summarise(sum(weight_tons, na.rm = TRUE)) %>% pull()` tons of trash. Gwynnda collected `r format(trash_df %>% filter(wheel == "gwy", lubridate::year(date) == 2022, lubridate::month(date) == 6) %>% summarise(sum(cigarette_butts, na.rm = TRUE)) %>% pull(),scientific = FALSE)` cigarette butts in June 2022.
 
-`r format(trash_df %>% 
-             filter(wheel == "gwy", 
-                    lubridate::year(date) == 2022, 
-                    lubridate::month(date) == 6) %>% 
-             summarise(sum(cigarette_butts, na.rm = TRUE)) %>% 
-             pull(), scientific = FALSE)`
+# Problem 3
+upload two files
+```{r}
+zip_code=read.csv("./zillow_data/Zip Codes.csv") %>% 
+  janitor::clean_names() %>% 
+  mutate(
+    zip=as.character(zip_code)
+  ) %>% 
+  select(zip,county,neighborhood) %>% 
+  arrange(zip)
+
+zori_nyc=read.csv("./zillow_data/Zip_zori_uc_sfrcondomfr_sm_month_NYC.csv") %>% 
+  janitor::clean_names() %>% 
+  pivot_longer(
+    cols = 10:last_col(),
+    names_to = "date",
+    values_to = "rent_index"
+  ) %>% 
+  mutate(
+    zip=as.character(region_name),
+    date=str_remove(date,"^x"), 
+    date=ymd(str_replace_all(date,"_","-"))
+  ) %>% 
+  select(zip,date,rent_index) %>% 
+  arrange(zip)
+```
+
+Merge the two files. Before we merge, we need to check for completeness and correctness across datasets.
+
+```{r}
+zipmap_dups <- zip_code %>% count(zip) %>% filter(n > 1)
+zipmap_dups
+zip_code <- zip_code %>%
+  mutate(
+    county = case_when(
+      zip == "10463" ~ "Bronx", 
+      zip == "11201" ~ "Kings", 
+      TRUE ~ county 
+    )
+  ) %>%
+  distinct(zip, .keep_all = TRUE) 
+
+zori_final <- zori_nyc %>%
+  left_join(zip_code, by = "zip") %>%
+  arrange(zip, date)
+```
+
+```{r}
+n_obs <- nrow(zori_final)
+
+n_zip <- n_distinct(zori_final$zip)
+
+n_neighborhood <- n_distinct(zori_final$neighborhood)
+
+```
+
+The resulting tidy dataset combines the Zillow ZORI monthly series with ZIP-level geographic information.  
+Each row corresponds to one ZIP code in one month, containing variables such as `zip`, `date`, `rent_index`, `county`, and `neighborhood`.  
+In total, the dataset includes `r n_obs` observations, covering `r n_zip` unique ZIP codes and `r n_neighborhood` unique neighborhoods.
+
+```{r}
+zip_missing <- anti_join(
+  zip_code %>% distinct(zip),
+  zori_nyc %>% distinct(zip),
+  by = "zip"
+)
+
+nrow(zip_missing) 
+head(zip_missing)
+```
+There are `r nrow(zip_missing)` ZIP codes present in the ZIP code dataset that do not appear in the Zillow Rental Price dataset.  
+For example, ZIP codes `r paste(head(zip_missing, 3), collapse = ", ")` are in the geographic reference file but not in Zillow’s rental index.  
+
+Some ZIP codes are missing mainly because:  
+(1) Some ZIP codes may correspond to non-residential areas (e.g., large office or industrial zones) where Zillow does not track rental listings.  
+(2) Zillow often restricts its rental price index to areas with sufficient data quality and sample size, which means less populated or special-purpose ZIP codes may be left out.  
 

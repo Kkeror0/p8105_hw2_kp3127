@@ -485,7 +485,91 @@ corresponding to a dumpster of trash collected by one of the wheels
 For available data, Professor Trash Wheel has collected a total of
 246.74 tons of trash. Gwynnda collected 18120 cigarette butts in June
 2022.</p>
-<p>18120</p>
+</div>
+<div id="problem-3" class="section level1">
+<h1>Problem 3</h1>
+<p>upload two files</p>
+<pre class="r"><code>zip_code=read.csv(&quot;./zillow_data/Zip Codes.csv&quot;) %&gt;% 
+  janitor::clean_names() %&gt;% 
+  mutate(
+    zip=as.character(zip_code)
+  ) %&gt;% 
+  select(zip,county,neighborhood) %&gt;% 
+  arrange(zip)
+
+zori_nyc=read.csv(&quot;./zillow_data/Zip_zori_uc_sfrcondomfr_sm_month_NYC.csv&quot;) %&gt;% 
+  janitor::clean_names() %&gt;% 
+  pivot_longer(
+    cols = 10:last_col(),
+    names_to = &quot;date&quot;,
+    values_to = &quot;rent_index&quot;
+  ) %&gt;% 
+  mutate(
+    zip=as.character(region_name),
+    date=str_remove(date,&quot;^x&quot;), 
+    date=ymd(str_replace_all(date,&quot;_&quot;,&quot;-&quot;))
+  ) %&gt;% 
+  select(zip,date,rent_index) %&gt;% 
+  arrange(zip)</code></pre>
+<p>Merge the two files. Before we merge, we need to check for
+completeness and correctness across datasets.</p>
+<pre class="r"><code>zipmap_dups &lt;- zip_code %&gt;% count(zip) %&gt;% filter(n &gt; 1)
+zipmap_dups</code></pre>
+<pre><code>##     zip n
+## 1 10463 2
+## 2 11201 2</code></pre>
+<pre class="r"><code>zip_code &lt;- zip_code %&gt;%
+  mutate(
+    county = case_when(
+      zip == &quot;10463&quot; ~ &quot;Bronx&quot;, 
+      zip == &quot;11201&quot; ~ &quot;Kings&quot;, 
+      TRUE ~ county 
+    )
+  ) %&gt;%
+  distinct(zip, .keep_all = TRUE) 
+
+zori_final &lt;- zori_nyc %&gt;%
+  left_join(zip_code, by = &quot;zip&quot;) %&gt;%
+  arrange(zip, date)</code></pre>
+<pre class="r"><code>n_obs &lt;- nrow(zori_final)
+
+n_zip &lt;- n_distinct(zori_final$zip)
+
+n_neighborhood &lt;- n_distinct(zori_final$neighborhood)</code></pre>
+<p>The resulting tidy dataset combines the Zillow ZORI monthly series
+with ZIP-level geographic information.<br />
+Each row corresponds to one ZIP code in one month, containing variables
+such as <code>zip</code>, <code>date</code>, <code>rent_index</code>,
+<code>county</code>, and <code>neighborhood</code>.<br />
+In total, the dataset includes 17284 observations, covering 149 unique
+ZIP codes and 43 unique neighborhoods.</p>
+<pre class="r"><code>zip_missing &lt;- anti_join(
+  zip_code %&gt;% distinct(zip),
+  zori_nyc %&gt;% distinct(zip),
+  by = &quot;zip&quot;
+)
+
+nrow(zip_missing) </code></pre>
+<pre><code>## [1] 171</code></pre>
+<pre class="r"><code>head(zip_missing)</code></pre>
+<pre><code>##     zip
+## 1 10008
+## 2 10020
+## 3 10041
+## 4 10043
+## 5 10045
+## 6 10047</code></pre>
+<p>There are 171 ZIP codes present in the ZIP code dataset that do not
+appear in the Zillow Rental Price dataset.<br />
+For example, ZIP codes c(“10008”, “10020”, “10041”) are in the
+geographic reference file but not in Zillow’s rental index.</p>
+<p>Some ZIP codes are missing mainly because:<br />
+(1) Some ZIP codes may correspond to non-residential areas (e.g., large
+office or industrial zones) where Zillow does not track rental
+listings.<br />
+(2) Zillow often restricts its rental price index to areas with
+sufficient data quality and sample size, which means less populated or
+special-purpose ZIP codes may be left out.</p>
 </div>
 
 
